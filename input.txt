@@ -1,6 +1,2 @@
-3 2 4 3
-0 29
-3 0
-4 0
-38 113
-17 46
+11
+ab bb aaa bba baba babb aaaba aabbb a a b

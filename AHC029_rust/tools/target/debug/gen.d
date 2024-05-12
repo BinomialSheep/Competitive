@@ -1,1 +1,0 @@
-/home/ilu/Competitive/Competitive/AHC027_rust/tools/target/debug/gen: /home/ilu/Competitive/Competitive/AHC027_rust/tools/src/bin/gen.rs /home/ilu/Competitive/Competitive/AHC027_rust/tools/src/lib.rs /home/ilu/Competitive/Competitive/AHC027_rust/tools/src/lib_vis.rs

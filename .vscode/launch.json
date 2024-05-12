@@ -1,46 +1,43 @@
 {
-  // IntelliSense を使用して利用可能な属性を学べます。
-  // 既存の属性の説明をホバーして表示します。
-  // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "g++ - アクティブ ファイルのビルドとデバッグ",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${fileDirname}/${fileBasenameNoExtension}",
-      "args": [
-        "-std=gnu++17",
-        "-I",
-        "/home/ilu/competitive/Competitive/",
-        "-DLOCAL",
-        "-I",
-        "/home/ilu/competitive/Competitive/ac-library/",
-        "-Wall",
-        "-Wextra",
-        "-Wshadow",
-        "-Wconversion",
-        "-Wfloat-equal",
-        "-ftrapv",
-        "-fstack-protector-all",
-        "-fsanitize=address,undefined",
-        "-ggdb",
-        "${file}"
-      ],
-      "stopAtEntry": false,
-      "cwd": "${fileDirname}",
-      "environment": [],
-      "externalConsole": false,
-      "MIMode": "gdb",
-      "setupCommands": [
+    "version": "0.2.0",
+    "configurations": [
         {
-          "description": "gdb の再フォーマットを有効にする",
-          "text": "-enable-pretty-printing",
-          "ignoreFailures": true
+            "name": "g++ - アクティブ ファイルのビルドとデバッグ",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}/${fileBasenameNoExtension}",
+            "args": [
+                "-std=gnu++17",
+                "-I",
+                "/home/ilu/competitive/Competitive/",
+                "-DLOCAL",
+                "-I",
+                "/home/ilu/competitive/Competitive/ac-library/",
+                "-Wall",
+                "-Wextra",
+                "-Wshadow",
+                "-Wconversion",
+                "-Wfloat-equal",
+                "-ftrapv",
+                "-fstack-protector-all",
+                "-fsanitize=address,undefined",
+                "-ggdb",
+                "${file}"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "gdb の再フォーマットを有効にする",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "C/C++: g++ アクティブなファイルのビルド",
+            "miDebuggerPath": "/usr/bin/gdb"
         }
-      ],
-      "preLaunchTask": "C/C++: g++ アクティブなファイルのビルド",
-      "miDebuggerPath": "/usr/bin/gdb"
-    }
-  ]
+    ]
 }

@@ -32,4 +32,5 @@
   "[plaintext]": {
     "editor.formatOnSave": false
   },
+  "cmake.configureOnOpen": true,
 }
