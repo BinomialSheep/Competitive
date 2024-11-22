@@ -93,7 +93,8 @@
 			"typeindex": "cpp",
 			"typeinfo": "cpp",
 			"input": "cpp",
-			"all": "cpp"
+			"all": "cpp",
+			"strstream": "cpp"
 		},
 		"editor.formatOnSaveMode": "modificationsIfAvailable"
 	}

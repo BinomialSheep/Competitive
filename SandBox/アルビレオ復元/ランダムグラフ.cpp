@@ -14,8 +14,8 @@ using namespace std;
 struct Solver {
   void solve() {
     /* input */
-    int N = 60;
-    int M = 65;
+    int N = 1000;
+    int M = 1800;
     const int MAX_DEGREE = 3;
     vector<vector<int>> G(N);
     random_device rng;

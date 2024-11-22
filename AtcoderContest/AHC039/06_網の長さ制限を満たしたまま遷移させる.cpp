@@ -1,0 +1,448 @@
+#pragma region header
+#include <bits/stdc++.h>
+// デバッグ用マクロ：https://naskya.net/post/0002/
+#ifdef LOCAL
+#include <debug_print.hpp>
+#define debug(...) debug_print::multi_print(#__VA_ARGS__, __VA_ARGS__)
+#else
+#define debug(...) (static_cast<void>(0))
+#endif
+using namespace std;
+using ll = long long;
+using vi = vector<int>;
+using vl = vector<long long>;
+using vs = vector<string>;
+using vc = vector<char>;
+using vb = vector<bool>;
+using vpii = vector<pair<int, int>>;
+using vpll = vector<pair<long long, long long>>;
+using vvi = vector<vector<int>>;
+using vvl = vector<vector<long long>>;
+using vvc = vector<vector<char>>;
+using vvb = vector<vector<bool>>;
+using vvvi = vector<vector<vector<int>>>;
+using pii = pair<int, int>;
+
+#define rep(i, n) for (int i = 0; i < (int)(n); i++)
+#define all(x) (x).begin(), (x).end()
+#define INT(...)   \
+  int __VA_ARGS__; \
+  in(__VA_ARGS__)
+#define LL(...)   \
+  ll __VA_ARGS__; \
+  in(__VA_ARGS__)
+#define STR(...)      \
+  string __VA_ARGS__; \
+  in(__VA_ARGS__)
+#define Sort(a) sort(all(a))
+#define VEC(type, name, size) \
+  vector<type> name(size);    \
+  in(name)
+[[maybe_unused]] void print() {}
+template <class T, class... Ts>
+void print(const T& t, const Ts&... ts);
+template <class... Ts>
+void out(const Ts&... ts) {
+  print(ts...);
+  cout << '\n';
+}
+
+namespace IO {
+#define VOID(a) decltype(void(a))
+struct S {
+  S() {
+    cin.tie(nullptr)->sync_with_stdio(0);
+    fixed(cout).precision(12);
+  }
+} S;
+template <int I>
+struct P : P<I - 1> {};
+template <>
+struct P<0> {};
+template <class T>
+void i(T& t) {
+  i(t, P<3>{});
+}
+void i(vector<bool>::reference t, P<3>) {
+  int a;
+  i(a);
+  t = a;
+}
+template <class T>
+auto i(T& t, P<2>) -> VOID(cin >> t) {
+  cin >> t;
+}
+template <class T>
+auto i(T& t, P<1>) -> VOID(begin(t)) {
+  for (auto&& x : t) i(x);
+}
+template <class T, size_t... idx>
+void ituple(T& t, index_sequence<idx...>) {
+  in(get<idx>(t)...);
+}
+template <class T>
+auto i(T& t, P<0>) -> VOID(tuple_size<T>{}) {
+  ituple(t, make_index_sequence<tuple_size<T>::value>{});
+}
+template <class T>
+void o(const T& t) {
+  o(t, P<4>{});
+}
+template <size_t N>
+void o(const char (&t)[N], P<4>) {
+  cout << t;
+}
+template <class T, size_t N>
+void o(const T (&t)[N], P<3>) {
+  o(t[0]);
+  for (size_t i = 1; i < N; i++) {
+    o(' ');
+    o(t[i]);
+  }
+}
+template <class T>
+auto o(const T& t, P<2>) -> VOID(cout << t) {
+  cout << t;
+}
+template <class T>
+auto o(const T& t, P<1>) -> VOID(begin(t)) {
+  bool first = 1;
+  for (auto&& x : t) {
+    if (first)
+      first = 0;
+    else
+      o(' ');
+    o(x);
+  }
+}
+template <class T, size_t... idx>
+void otuple(const T& t, index_sequence<idx...>) {
+  print(get<idx>(t)...);
+}
+template <class T>
+auto o(T& t, P<0>) -> VOID(tuple_size<T>{}) {
+  otuple(t, make_index_sequence<tuple_size<T>::value>{});
+}
+#undef VOID
+}  // namespace IO
+#define unpack(a) \
+  (void)initializer_list<int> { (a, 0)... }
+template <class... Ts>
+void in(Ts&... t) {
+  unpack(IO::i(t));
+}
+template <class T, class... Ts>
+void print(const T& t, const Ts&... ts) {
+  IO::o(t);
+  unpack(IO::o((cout << ' ', ts)));
+}
+#undef unpack
+// #define MAX 10000
+#define INFTY (1 << 30)
+// 浮動小数点の誤差を考慮した等式
+#define EPS (1e-10)
+#define equal(a, b) (fabs((a) - (b)) < EPS)
+
+template <typename T>
+inline bool chmax(T& a, T b) {
+  return ((a < b) ? (a = b, true) : (false));
+}
+template <typename T>
+inline bool chmin(T& a, T b) {
+  return ((a > b) ? (a = b, true) : (false));
+}
+
+#define YESNO(yes, no)                          \
+  void yes(bool i = 1) { out(i ? #yes : #no); } \
+  void no() { out(#no); }
+YESNO(first, second)
+YESNO(First, Second)
+YESNO(Yes, No)
+YESNO(YES, NO)
+YESNO(possible, impossible)
+YESNO(POSSIBLE, IMPOSSIBLE)
+#pragma endregion header
+
+#pragma GCC optimize("O3")
+#pragma GCC optimize("unroll-loops")
+
+static uint32_t randXor() {
+  static uint32_t x = 123456789;
+  static uint32_t y = 362436069;
+  static uint32_t z = 521288629;
+  static uint32_t w = 88675123;
+  uint32_t t;
+
+  t = x ^ (x << 11);
+  x = y;
+  y = z;
+  z = w;
+  return w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
+}
+
+class TimeKeeper {
+ private:
+  chrono::high_resolution_clock::time_point start_time_;
+  int64_t time_threshold_;
+
+ public:
+  // 時間制限をミリ秒単位で指定してインスタンスをつくる。
+  TimeKeeper(const int64_t& time_threshold)
+      : start_time_(chrono::high_resolution_clock::now()),
+        time_threshold_(time_threshold) {}
+
+  // インスタンス生成した時から指定した時間制限を超過したか判定する。
+  bool isTimeOver() const {
+    auto diff = chrono::high_resolution_clock::now() - this->start_time_;
+    return chrono::duration_cast<chrono::milliseconds>(diff).count() >=
+           time_threshold_;
+  }
+
+  int64_t getTime() const {
+    auto diff = chrono::high_resolution_clock::now() - this->start_time_;
+    return chrono::duration_cast<chrono::milliseconds>(diff).count();
+  }
+};
+
+int input_N;
+vector<int> input_saba_X(5000), input_saba_Y(5000);
+vector<int> input_iwashi_X(5000), input_iwashi_Y(5000);
+
+void process_input() {
+  cin >> input_N;
+  rep(i, input_N) cin >> input_saba_X[i] >> input_saba_Y[i];
+  rep(i, input_N) cin >> input_iwashi_X[i] >> input_iwashi_Y[i];
+}
+
+// grid_number * grid_number 個に分割し、各グリッドのスコアを求める
+vector<vector<int>> calc_grid_score(int grid_number) {
+  vector grid_score(grid_number, vector<int>(grid_number));
+
+  const int grid_size = 100000 / grid_number;
+  rep(i, input_N) {
+    int x = input_saba_X[i] / grid_size;
+    int y = input_saba_Y[i] / grid_size;
+    grid_score[grid_number - y - 1][x]++;
+  }
+  rep(i, input_N) {
+    int x = input_iwashi_X[i] / grid_size;
+    int y = input_iwashi_Y[i] / grid_size;
+    grid_score[grid_number - y - 1][x]--;
+  }
+
+  // int sum = 0;
+  // rep(i, grid_number) rep(j, grid_number) sum += grid_score[i][j];
+  // assert(sum == 0);
+  debug(grid_score);
+
+  return grid_score;
+}
+
+vector<vector<bool>> init_grid_on(int grid_number) {
+  vector<vector<bool>> grid_on(grid_number + 2,
+                               vector<bool>(grid_number + 2, true));
+  rep(i, grid_number + 2) grid_on[i][0] = grid_on[i][grid_number + 1] =
+      grid_on[0][i] = grid_on[grid_number + 1][i] = false;
+
+  return grid_on;
+}
+
+void output_hand_on_wall(int grid_number, const vector<vector<bool>>& grid_on) {
+  const int grid_size = 100000 / grid_number;
+  const int LEFT = 0, TOP = 1, RIGHT = 2, DOWN = 3;
+
+  // 適当な始点を探す
+  int start_y = -1, start_x = -1;
+  rep(i, grid_number) {
+    rep(j, grid_number) {
+      if (grid_on[i][j]) {
+        start_y = i, start_x = j;
+        break;
+      }
+    }
+    if (start_y != -1) break;
+  }
+  // 右手法で復元
+  vector<int> out_y, out_x;
+  int now_y = start_y, now_x = start_x, direction = RIGHT;
+  out_y.push_back(now_y * grid_size);
+  out_x.push_back(now_x * grid_size);
+  do {
+    // debug(now_y, now_x, direction);
+    if (direction == RIGHT) {
+      now_x++;
+      // 上、右、下の優先度
+      if (grid_on[now_y - 1][now_x]) {
+        direction = TOP;
+      } else if (grid_on[now_y][now_x]) {
+        direction = RIGHT;
+      } else {
+        direction = DOWN;
+      }
+    } else if (direction == TOP) {
+      now_y--;
+      // 左、上、右の優先度
+      if (grid_on[now_y - 1][now_x - 1]) {
+        direction = LEFT;
+      } else if (grid_on[now_y - 1][now_x]) {
+        direction = TOP;
+      } else {
+        direction = RIGHT;
+      }
+    } else if (direction == DOWN) {
+      now_y++;
+      // 右、下、左の優先度
+      if (grid_on[now_y][now_x]) {
+        direction = RIGHT;
+      } else if (grid_on[now_y][now_x - 1]) {
+        direction = DOWN;
+      } else {
+        direction = LEFT;
+      }
+    } else if (direction == LEFT) {
+      now_x--;
+      // 下、左、上の優先度
+      if (grid_on[now_y][now_x - 1]) {
+        direction = DOWN;
+      } else if (grid_on[now_y - 1][now_x - 1]) {
+        direction = LEFT;
+      } else {
+        direction = TOP;
+      }
+    }
+    out_y.push_back(now_y * grid_size);
+    out_x.push_back(now_x * grid_size);
+  } while (now_y != start_y || now_x != start_x);
+  // 最後の頂点は出力不要
+  out_x.pop_back(), out_y.pop_back();
+
+  // まっすぐな頂点はいらないので削除する(1000頂点制限回避用)
+  vector<int> new_out_y, new_out_x;
+  rep(i, out_y.size()) {
+    if (i < 2) {
+      new_out_y.push_back(out_y[i]);
+      new_out_x.push_back(out_x[i]);
+    } else {
+      int sz = (int)new_out_y.size();
+      int y1 = out_y[i], x1 = out_x[i];
+      int y2 = new_out_y[sz - 1], x2 = new_out_x[sz - 1];
+      int y3 = new_out_y[sz - 2], x3 = new_out_x[sz - 2];
+      if ((y1 == y2 && y2 == y3) || (x1 == x2 && x2 == x3)) {
+        new_out_y.pop_back();
+        new_out_x.pop_back();
+      }
+      new_out_y.push_back(out_y[i]);
+      new_out_x.push_back(out_x[i]);
+    }
+  }
+  swap(new_out_y, out_y);
+  swap(new_out_x, out_x);
+
+  out(out_y.size());
+  rep(i, out_y.size()) out(out_x[i] - grid_size, 100000 + grid_size - out_y[i]);
+}
+
+int main() {
+  const int64_t time_threshold = 1800;
+  auto time_keeper = TimeKeeper(time_threshold);
+  process_input();
+
+  // 10 * 10個のグリッドに分割する
+  int grid_number = 30;
+  // グリッドごとのスコアを求める
+  vector<vector<int>> grid_score = calc_grid_score(grid_number);
+  vector<vector<bool>> grid_on = init_grid_on(grid_number);
+  debug(grid_on);
+  // 最初は全てgrid_onなのでスコア1
+  int score = 1;
+  // 最初は外周だけoffable
+  // set<int> onable_grids;
+  // set<int> offable_grids;
+  // for(int i = 1; i <= grid_number; i++)
+  // for(int j = 1; j <= grid_number; j++) {
+  //   if(i==1 || j==1 || i==grid_number || j ==grid_number) {
+  //     offable_grids.insert(i * grid_number + j);
+  //   }
+  // }
+  // 最初の周長は4e5
+  int perimeter = 4e5;
+
+  int loop_count = 0;
+  while (!time_keeper.isTimeOver()) {
+    loop_count++;
+
+    int y = randXor() % grid_number;
+    int x = randXor() % grid_number;
+    int diff_perimeter = 0;
+    // gridがON-OFF可能か。あとでもともとON-OFF可能なグリッドだけ持つよう変更するけど
+    auto f = [grid_on, &diff_perimeter](int y2, int x2) -> bool {
+      y2++, x2++;
+      if (grid_on[y2][x2]) {
+        // 周囲のonの数を数える
+        int cnt_on = grid_on[y2 - 1][x2] + grid_on[y2][x2 - 1] +
+                     grid_on[y2 + 1][x2] + grid_on[y2][x2 + 1];
+        // 周囲が全部ONならng
+        if (cnt_on == 4) return false;
+        if (cnt_on == 1) diff_perimeter = -2;
+        if (cnt_on == 3) diff_perimeter = +2;
+
+        // OFFにしても周りの連結性が保たれるならOK
+        // AHC039ラジオより
+        int ok =
+            grid_on[y2 - 1][x2] + grid_on[y2 + 1][x2] + grid_on[y2][x2 - 1] +
+            grid_on[y2][x2 + 1] -
+            grid_on[y2 - 1][x2 - 1] * grid_on[y2 - 1][x2] *
+                grid_on[y2][x2 - 1] -
+            grid_on[y2 + 1][x2 - 1] * grid_on[y2 + 1][x2] *
+                grid_on[y2][x2 - 1] -
+            grid_on[y2 - 1][x2 + 1] * grid_on[y2 - 1][x2] *
+                grid_on[y2][x2 + 1] -
+            grid_on[y2 + 1][x2 + 1] * grid_on[y2 + 1][x2] * grid_on[y2][x2 + 1];
+        return ok == 1;
+      } else {
+        return false;
+        // 周囲が全部OFFならng
+        int cnt_on = grid_on[y2 - 1][x2] + grid_on[y2][x2 - 1] +
+                     grid_on[y2 + 1][x2] + grid_on[y2][x2 + 1];
+        // 周囲が全部ONならng
+        if (cnt_on == 0) return false;
+        if (cnt_on == 1) diff_perimeter = +2;
+        if (cnt_on == 3) diff_perimeter = -2;
+        if (!grid_on[y2 - 1][x2] && !grid_on[y2][x2 - 1] &&
+            !grid_on[y2 + 1][x2] && !grid_on[y2][x2 + 1])
+          return false;
+        // ONにしても周りの連結性が保たれるならOK
+        int ok = (grid_on[y2 - 1][x2] ^ 1) + (grid_on[y2 + 1][x2] ^ 1) +
+                 (grid_on[y2][x2 - 1] ^ 1) + (grid_on[y2][x2 + 1] ^ 1) -
+                 (grid_on[y2 - 1][x2 - 1] ^ 1) * (grid_on[y2 - 1][x2] ^ 1) *
+                     (grid_on[y2][x2 - 1] ^ 1) -
+                 (grid_on[y2 + 1][x2 - 1] ^ 1) * (grid_on[y2 + 1][x2] ^ 1) *
+                     (grid_on[y2][x2 - 1] ^ 1) -
+                 (grid_on[y2 - 1][x2 + 1] ^ 1) * (grid_on[y2 - 1][x2] ^ 1) *
+                     (grid_on[y2][x2 + 1] ^ 1) -
+                 (grid_on[y2 + 1][x2 + 1] ^ 1) * (grid_on[y2 + 1][x2] ^ 1) *
+                     (grid_on[y2][x2 + 1] ^ 1);
+
+        return ok == 1;
+      }
+    };
+
+    if (!f(y, x)) continue;
+    if (perimeter + diff_perimeter > 4e5) continue;
+    if (grid_on[y + 1][x + 1] && grid_score[y][x] <= 0) {
+      grid_on[y + 1][x + 1] = grid_on[y + 1][x + 1] ^ 1;
+      score -= grid_score[y][x];
+      perimeter += diff_perimeter;
+    } else if (!grid_on[y + 1][x + 1] && grid_score[y][x] >= 0) {
+      grid_on[y + 1][x + 1] = grid_on[y + 1][x + 1] ^ 1;
+      score += grid_score[y][x];
+      perimeter += diff_perimeter;
+    }
+  }
+  debug(loop_count);
+  debug(score);
+  debug(grid_on);
+
+  // 左手法で復元
+  output_hand_on_wall(grid_number, grid_on);
+}

@@ -9,7 +9,7 @@ using namespace std;
 // 素数判定
 // 約数列挙
 // 素因数分解（prime factorization）
-// ↑前処理 O(N loglog N)、クエリあたりN log N
+// ↑前処理 O(N loglog N)、クエリあたりlog N
 // 高速ゼータ変換
 // 高速メビウス変換
 
@@ -105,7 +105,7 @@ struct Eratosthenes {
     }
   }
 
-  // 高速素因数分解 O(N log N)
+  // 高速素因数分解 O(log N)
   vector<pair<int, int>> factorize(int n) {
     vector<pair<int, int>> res;
     while (n > 1) {
