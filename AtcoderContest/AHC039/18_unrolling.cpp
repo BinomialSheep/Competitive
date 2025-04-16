@@ -1,27 +1,6 @@
 #pragma region header
 #include <bits/stdc++.h>
-// デバッグ用マクロ：https://naskya.net/post/0002/
-#ifdef LOCAL
-#include <debug_print.hpp>
-#define debug(...) debug_print::multi_print(#__VA_ARGS__, __VA_ARGS__)
-#else
-#define debug(...) (static_cast<void>(0))
-#endif
 using namespace std;
-using ll = long long;
-using vi = vector<int>;
-using vl = vector<long long>;
-using vs = vector<string>;
-using vc = vector<char>;
-using vb = vector<bool>;
-using vpii = vector<pair<int, int>>;
-using vpll = vector<pair<long long, long long>>;
-using vvi = vector<vector<int>>;
-using vvl = vector<vector<long long>>;
-using vvc = vector<vector<char>>;
-using vvb = vector<vector<bool>>;
-using vvvi = vector<vector<vector<int>>>;
-using pii = pair<int, int>;
 
 #define rep(i, n) for (int i = 0; i < (int)(n); i++)
 #define all(x) (x).begin(), (x).end()
@@ -137,11 +116,6 @@ void print(const T& t, const Ts&... ts) {
   unpack(IO::o((cout << ' ', ts)));
 }
 #undef unpack
-// #define MAX 10000
-#define INFTY (1 << 30)
-// 浮動小数点の誤差を考慮した等式
-#define EPS (1e-10)
-#define equal(a, b) (fabs((a) - (b)) < EPS)
 
 template <typename T>
 inline bool chmax(T& a, T b) {
@@ -152,33 +126,39 @@ inline bool chmin(T& a, T b) {
   return ((a > b) ? (a = b, true) : (false));
 }
 
-#define YESNO(yes, no)                          \
-  void yes(bool i = 1) { out(i ? #yes : #no); } \
-  void no() { out(#no); }
-YESNO(first, second)
-YESNO(First, Second)
-YESNO(Yes, No)
-YESNO(YES, NO)
-YESNO(possible, impossible)
-YESNO(POSSIBLE, IMPOSSIBLE)
 #pragma endregion header
 
+// #pragma GCC target("avx2")
 #pragma GCC optimize("O3")
 #pragma GCC optimize("unroll-loops")
+// #pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,tune=native")
+// static uint32_t randXor() {
+//   static uint32_t x = 123456789;
+//   static uint32_t y = 362436069;
+//   static uint32_t z = 521288629;
+//   static uint32_t w = 88675123;
+//   uint32_t t;
 
-static uint32_t randXor() {
-  static uint32_t x = 123456789;
-  static uint32_t y = 362436069;
-  static uint32_t z = 521288629;
-  static uint32_t w = 88675123;
-  uint32_t t;
+//   t = x ^ (x << 11);
+//   x = y;
+//   y = z;
+//   z = w;
+//   return w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
+// }
 
-  t = x ^ (x << 11);
-  x = y;
-  y = z;
-  z = w;
-  return w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
+static uint32_t s0 = 123456789, s1 = 362436069, s2 = 521288629, s3 = 88675123;
+static inline uint32_t randXor() {
+  uint32_t t = s1 << 9;
+  uint32_t r = s0 + s3;  // 戻り値を直接計算
+  s2 ^= s0;
+  s3 ^= s1;
+  s1 ^= s2;
+  s0 ^= s3;
+  s2 ^= t;
+  s3 = (s3 << 11) | (s3 >> 21);  // 32bitなのでシフト量は修正
+  return r;
 }
+
 // 0以上1未満の小数をとる乱数
 static double rand01() { return (randXor() + 0.5) * (1.0 / UINT_MAX); }
 
@@ -206,19 +186,23 @@ class TimeKeeper {
   }
 };
 
-int input_N;
-vector<int> input_saba_X(5000), input_saba_Y(5000);
-vector<int> input_iwashi_X(5000), input_iwashi_Y(5000);
+constexpr int input_N = 5000;
+array<int, input_N> input_saba_X, input_saba_Y;
+array<int, input_N> input_iwashi_X, input_iwashi_Y;
+
+array<array<int, 320>, 320> grid_score;
+array<array<char, 322>, 322> grid_on;
 
 void process_input() {
-  cin >> input_N;
+  int dummy;
+  cin >> dummy;
   rep(i, input_N) cin >> input_saba_X[i] >> input_saba_Y[i];
   rep(i, input_N) cin >> input_iwashi_X[i] >> input_iwashi_Y[i];
 }
 
 // grid_number * grid_number 個に分割し、各グリッドのスコアを求める
-vector<vector<int>> calc_grid_score(int grid_number) {
-  vector grid_score(grid_number, vector<int>(grid_number));
+void calc_grid_score(int grid_number) {
+  rep(y, grid_number) rep(x, grid_number) grid_score[y][x] = 0;
 
   const int grid_size = 100000 / grid_number;
   rep(i, input_N) {
@@ -231,27 +215,18 @@ vector<vector<int>> calc_grid_score(int grid_number) {
     int y = input_iwashi_Y[i] / grid_size;
     grid_score[grid_number - y - 1][x]--;
   }
-
-  // int sum = 0;
-  // rep(i, grid_number) rep(j, grid_number) sum += grid_score[i][j];
-  // assert(sum == 0);
-  // debug(grid_score);
-
-  return grid_score;
 }
 
-vector<vector<bool>> init_grid_on(int grid_number) {
-  vector<vector<bool>> grid_on(grid_number + 2,
-                               vector<bool>(grid_number + 2, true));
-  rep(i, grid_number + 2) grid_on[i][0] = grid_on[i][grid_number + 1] =
-      grid_on[0][i] = grid_on[grid_number + 1][i] = false;
-
-  return grid_on;
+void init_grid_on(int grid_number) {
+  rep(i, grid_number + 2) rep(j, grid_number + 2) grid_on[i][j] = true;
+  rep(k, 2) rep(i, grid_number + 2) grid_on[i][k] =
+      grid_on[i][grid_number + 1 - k] = grid_on[k][i] =
+          grid_on[grid_number + 1 - k][i] = false;
 }
 
-void output_hand_on_wall(int grid_number, const vector<vector<bool>>& grid_on) {
+void output_hand_on_wall(int grid_number) {
   const int grid_size = 100000 / grid_number;
-  const int LEFT = 0, TOP = 1, RIGHT = 2, DOWN = 3;
+  constexpr int LEFT = 0, TOP = 1, RIGHT = 2, DOWN = 3;
 
   // 適当な始点を探す
   int start_y = -1, start_x = -1;
@@ -270,7 +245,6 @@ void output_hand_on_wall(int grid_number, const vector<vector<bool>>& grid_on) {
   out_y.push_back(now_y * grid_size);
   out_x.push_back(now_x * grid_size);
   do {
-    // debug(now_y, now_x, direction);
     if (direction == RIGHT) {
       now_x++;
       // 上、右、下の優先度
@@ -341,41 +315,84 @@ void output_hand_on_wall(int grid_number, const vector<vector<bool>>& grid_on) {
     swap(new_out_y, out_y);
     swap(new_out_x, out_x);
   }
-
-  debug(out_y.size());
-
   out(out_y.size());
   rep(i, out_y.size()) out(out_x[i] - grid_size, 100000 + grid_size - out_y[i]);
 }
 
-void double_grid(int& grid_number, int& grid_size,
-                 vector<vector<int>>& grid_score,
-                 vector<vector<bool>>& grid_on) {
-  // debug(grid_on);
-
+void double_grid(int& grid_number, int& grid_size) {
   grid_number *= 2;
   grid_size = 100000 / grid_number;
-  grid_score = calc_grid_score(grid_number);
-  vector<vector<bool>> new_grid_on(grid_number + 2,
-                                   vector<bool>(grid_number + 2, false));
+  calc_grid_score(grid_number);
 
-  for (int i = 1; i <= grid_number; i++)
-    for (int j = 1; j <= grid_number; j++) {
-      new_grid_on[i][j] = grid_on[(i + 1) / 2][(j + 1) / 2];
+  for (int i = grid_number; i >= 1; i--)
+    for (int j = grid_number; j >= 1; j--) {
+      grid_on[i][j] = grid_on[(i + 1) / 2][(j + 1) / 2];
     }
-  // debug(grid_on);
-
-  swap(grid_on, new_grid_on);
-  // debug(grid_on);
 }
 
+/**
+ * 自分を除く
+ * 0 1 2
+ * 3   4
+ * 5 6 7
+ */
+array<int, 256> is_onable;
+array<int, 256> is_offable;
+
+void init_is_switchable() {
+  rep(bit, 1 << 8) {
+    int cnt_on = ((bit >> 1) & 1) + ((bit >> 3) & 1) + ((bit >> 4) & 1) +
+                 ((bit >> 6) & 1);
+    // OFFにするパターン
+    if (cnt_on == 4) {
+      // 周囲が全部ONならng
+      is_offable[bit] = false;
+    } else {
+      is_offable[bit] =
+          ((bit >> 1) & 1) + ((bit >> 3) & 1) + ((bit >> 4) & 1) +
+              ((bit >> 6) & 1) -
+              ((bit >> 0) & 1) * ((bit >> 1) & 1) * ((bit >> 3) & 1) -
+              ((bit >> 1) & 1) * ((bit >> 2) & 1) * ((bit >> 4) & 1) -
+              ((bit >> 3) & 1) * ((bit >> 5) & 1) * ((bit >> 6) & 1) -
+              ((bit >> 4) & 1) * ((bit >> 6) & 1) * ((bit >> 7) & 1) ==
+          1;
+    }
+    // ONにするパターン
+    if (cnt_on == 0) {
+      // 周囲が全部ONならng
+      is_onable[bit] = false;
+    } else {
+      is_onable[bit] =
+          !((bit >> 1) & 1) + !((bit >> 3) & 1) + !((bit >> 4) & 1) +
+              !((bit >> 6) & 1) -
+              !((bit >> 0) & 1) * !((bit >> 1) & 1) * !((bit >> 3) & 1) -
+              !((bit >> 1) & 1) * !((bit >> 2) & 1) * !((bit >> 4) & 1) -
+              !((bit >> 3) & 1) * !((bit >> 5) & 1) * !((bit >> 6) & 1) -
+              !((bit >> 4) & 1) * !((bit >> 6) & 1) * !((bit >> 7) & 1) ==
+          1;
+    }
+  }
+}
+
+// グリッドをオンオフできるか高速
+inline bool is_switchable_grid_fast(int y2, int x2) {
+  int key = grid_on[y2][x2] + (grid_on[y2][x2 + 1] << 1) +
+            (grid_on[y2][x2 + 2] << 2) + (grid_on[y2 + 1][x2] << 3) +
+            (grid_on[y2 + 1][x2 + 2] << 4) + (grid_on[y2 + 2][x2] << 5) +
+            (grid_on[y2 + 2][x2 + 1] << 6) + (grid_on[y2 + 2][x2 + 2] << 7);
+  return grid_on[y2 + 1][x2 + 1] ? is_offable[key] : is_onable[key];
+}
+
+// 320*320
+constexpr int max_nn = 320 * 320;
+int now_n = 100;
 struct IndexSet {
   vector<int> que;
-  vector<int> pos;
+  array<int, max_nn> pos;
 
-  IndexSet(int n) {
-    pos = vector<int>(n, -1);
-    que.reserve(n);
+  IndexSet() {
+    rep(i, max_nn) pos[i] = -1;
+    que.reserve(max_nn);
   }
 
   void add(int v) {
@@ -397,40 +414,113 @@ struct IndexSet {
   int size() const { return (int)que.size(); }
 
   // AHC039に固有のメソッド
-  void double_set() {
+  void double_set(int grid_number) {
     que.clear();
-    pos = vector<int>(4 * pos.size(), -1);
+
+    const int prev_grid_number = grid_number / 2;
+    for (int i = now_n - 1; i >= 0; i--) {
+      if (pos[i] != -1) {
+        int y = i / prev_grid_number;
+        int x = i % prev_grid_number;
+
+        int v1 = y * 2 * grid_number + x * 2;
+        int v2 = v1 + 1;
+        int v3 = v1 + grid_number;
+        int v4 = v3 + 1;
+
+        if (is_switchable_grid_fast(y * 2, x * 2)) this->add(v1);
+        if (is_switchable_grid_fast(y * 2, x * 2 + 1)) this->add(v2);
+        if (is_switchable_grid_fast(y * 2 + 1, x * 2)) this->add(v3);
+        if (is_switchable_grid_fast(y * 2 + 1, x * 2 + 1)) this->add(v4);
+      }
+      if (i != 0) pos[i] = -1;
+    }
+
+    // // TODO：直前で周囲だったところだけチェックすると高速化できそう
+    // rep(y, grid_number) rep(x, grid_number) {
+    //   if (is_switchable_grid_fast(y, x)) {
+    //     this->add(y * grid_number + x);
+    //   } else {
+    //     pos[y * grid_number + x] = -1;
+    //   }
+    // }
+    now_n *= 4;
   }
 };
 
-int main() {
-  process_input();
+// diff_perimeterを求める
+int calc_diff_perimeter(int y2, int x2) {
+  y2++, x2++;
+  // 周囲のonの数を数える
+  int cnt_on = grid_on[y2 - 1][x2] + grid_on[y2][x2 - 1] + grid_on[y2 + 1][x2] +
+               grid_on[y2][x2 + 1];
+  if (grid_on[y2][x2]) {
+    if (cnt_on == 1) return -2;
+    if (cnt_on == 3) return 2;
+  } else {
+    if (cnt_on == 1) return 2;
+    if (cnt_on == 3) return -2;
+  }
+  return 0;
+}
 
-  // 10 * 10個のグリッドに分割する
-  int grid_number = 10;
-  int grid_size = 100000 / grid_number;
-  // グリッドごとのスコアを求める
-  vector<vector<int>> grid_score = calc_grid_score(grid_number);
-  vector<vector<bool>> grid_on = init_grid_on(grid_number);
-  debug(grid_on);
-  // 最初は全てgrid_onなのでスコア1
-  int score = 1;
-  IndexSet index_set(input_N);
-  rep(i, grid_number) rep(j, grid_number) {
-    if (i == 0 || j == 0 || i == grid_number - 1 || j == grid_number - 1) {
-      index_set.add(i * grid_number + j);
+// 8近傍を更新
+vector<int> dy = {0, 0, -1, 1, -1, -1, 1, 1};
+vector<int> dx = {-1, 1, 0, 0, -1, 1, -1, 1};
+void update_index_set(int y, int x, IndexSet& index_set, int grid_number) {
+  rep(i, 4) {
+    int y2 = y + dy[i], x2 = x + dx[i];
+    if (y2 >= 0 && x2 >= 0 && y2 < grid_number && x2 < grid_number) {
+      int idx_2 = y2 * grid_number + x2;
+      if (is_switchable_grid_fast(y2, x2)) {
+        if (!index_set.contains(idx_2)) index_set.add(idx_2);
+      } else {
+        if (index_set.contains(idx_2)) index_set.remove(idx_2);
+      }
     }
   }
-  // 最初の周長は4e5
-  int perimeter = 4e5;
+  for (int i = 4; i < 8; i++) {
+    int y2 = y + dy[i], x2 = x + dx[i];
+    if (y2 >= 0 && x2 >= 0 && y2 < grid_number && x2 < grid_number &&
+        grid_on[y2][x] == grid_on[y2][x]) {
+      int idx_2 = y2 * grid_number + x2;
+      if (is_switchable_grid_fast(y2, x2)) {
+        if (!index_set.contains(idx_2)) index_set.add(idx_2);
+      } else {
+        if (index_set.contains(idx_2)) index_set.remove(idx_2);
+      }
+    }
+  }
+}
+
+constexpr int init_grid_number = 10;
+
+int main() {
+  process_input();
+  init_is_switchable();
+
+  // 10 * 10個のグリッドに分割する
+  int grid_number = init_grid_number;
+  int grid_size = 100000 / grid_number;
+  // グリッドごとのスコアを求める
+  calc_grid_score(grid_number);
+  init_grid_on(grid_number);
+  IndexSet index_set;
+  rep(y, grid_number) rep(x, grid_number) {
+    if (is_switchable_grid_fast(y, x)) index_set.add(y * grid_number + x);
+  }
+  // 周長(grid_onの初期位置によって変える必要がある)
+  int perimeter = grid_size * 8 * 4;
+  int score = 1;
+  rep(y, grid_number) rep(x, grid_number) {
+    if (grid_on[y + 1][x + 1]) score += grid_score[y][x];
+  }
 
   // vector<int> times = {200, 400, 500, 500, 200, 150};
   vector<int> times = {210, 410, 500, 500, 200, 160};
   vector<double> temps = {5e2, 5e1, 1e1, 5e0, 1e0, 3e-1, 3e-1};
-  // vector<int> times = {210, 410, 500, 500, 200, 160, 150};
-  // vector<double> temps = {5e2, 5e1, 1e1, 5e0, 1e0, 3e-1, 3e-1, 3e-1};
-  rep(i, times.size()) times[i] *= 10;
-  // rep(i, temps.size()) temps[i] *= 0.9;
+  // vector<double> temps = {5e2, 6e1, 1e1, 5e0, 3e0, 3e-1, 3e-1};
+  // rep(i, times.size()) times[i] *= 10;
   int phase_index = 0;
   double start_temp = temps[phase_index];    // 開始時の温度
   double end_temp = temps[phase_index + 1];  // 終了時の温度
@@ -439,141 +529,81 @@ int main() {
 
   int loop_count = 0;
 
-  // グリッドをオンオフできるか判定
-  auto g = [&](int y2, int x2) -> bool {
-    y2++, x2++;
-    // 周囲のonの数を数える
-    int cnt_on = grid_on[y2 - 1][x2] + grid_on[y2][x2 - 1] +
-                 grid_on[y2 + 1][x2] + grid_on[y2][x2 + 1];
-    if (grid_on[y2][x2]) {
-      // 周囲が全部ONならng
-      if (cnt_on == 4) return false;
-      // OFFにしても周りの連結性が保たれるならOK
-      // AHC039ラジオより
-      return 1 == grid_on[y2 - 1][x2] + grid_on[y2 + 1][x2] +
-                      grid_on[y2][x2 - 1] + grid_on[y2][x2 + 1] -
-                      grid_on[y2 - 1][x2 - 1] * grid_on[y2 - 1][x2] *
-                          grid_on[y2][x2 - 1] -
-                      grid_on[y2 + 1][x2 - 1] * grid_on[y2 + 1][x2] *
-                          grid_on[y2][x2 - 1] -
-                      grid_on[y2 - 1][x2 + 1] * grid_on[y2 - 1][x2] *
-                          grid_on[y2][x2 + 1] -
-                      grid_on[y2 + 1][x2 + 1] * grid_on[y2 + 1][x2] *
-                          grid_on[y2][x2 + 1];
-    } else {
-      // 周囲が全部OFFならng
-      if (cnt_on == 0) return false;
-      // ONにしても周りの連結性が保たれるならOK
-      return 1 ==
-             (grid_on[y2 - 1][x2] ^ 1) + (grid_on[y2 + 1][x2] ^ 1) +
-                 (grid_on[y2][x2 - 1] ^ 1) + (grid_on[y2][x2 + 1] ^ 1) -
-                 (grid_on[y2 - 1][x2 - 1] ^ 1) * (grid_on[y2 - 1][x2] ^ 1) *
-                     (grid_on[y2][x2 - 1] ^ 1) -
-                 (grid_on[y2 + 1][x2 - 1] ^ 1) * (grid_on[y2 + 1][x2] ^ 1) *
-                     (grid_on[y2][x2 - 1] ^ 1) -
-                 (grid_on[y2 - 1][x2 + 1] ^ 1) * (grid_on[y2 - 1][x2] ^ 1) *
-                     (grid_on[y2][x2 + 1] ^ 1) -
-                 (grid_on[y2 + 1][x2 + 1] ^ 1) * (grid_on[y2 + 1][x2] ^ 1) *
-                     (grid_on[y2][x2 + 1] ^ 1);
-    }
-  };
-
-  vi dy = {-1, -1, -1, 0, 0, 1, 1, 1};
-  vi dx = {-1, 0, 1, -1, 1, -1, 0, 1};
-
   double progress_ratio =
       (double)time_keeper.getTime() / (double)time_threshold;
-  double temp = start_temp + (end_temp - start_temp) * progress_ratio;
+  double temp_inv =
+      1.0 / (start_temp + (end_temp - start_temp) * progress_ratio);
   double probability = 0;
+  double time_threshold_inv = 1 / (double)time_threshold;
+
+  // 焼きなましの統計値
+  int last_score = score;
+  int iter_count = 0;
+  int accepted = 0;
+  int updated = 0;
+  auto print_statistic = [&]() {
+    cerr << "init_score: " << last_score << endl;
+    cerr << "score: " << score << endl;
+    cerr << "all iter: " << loop_count - iter_count << endl;
+    cerr << "accepted: " << accepted << endl;
+    cerr << "updated: " << updated << endl;
+    last_score = score;
+    iter_count = loop_count;
+    accepted = 0;
+    updated = 0;
+  };
 
   while (true) {
     loop_count++;
-    if (loop_count % 2 == 0) {
+    if ((loop_count & 1023) == 0) {
       if (time_keeper.isTimeOver()) {
-        // break;
-        output_hand_on_wall(grid_number, grid_on);
-        debug(loop_count, score);
+        output_hand_on_wall(grid_number);
+        // debug(loop_count, score);
+        print_statistic();
         phase_index++;
         if (phase_index == (int)times.size()) break;
-        double_grid(grid_number, grid_size, grid_score, grid_on);
+        double_grid(grid_number, grid_size);
 
-        // debug(index_set.que);
-        index_set.double_set();
-        // TODO：直前で周囲だったところだけチェックすると高速化できそう
-        rep(y, grid_number) rep(x, grid_number) {
-          if (g(y, x)) index_set.add(y * grid_number + x);
-        }
-        // debug(index_set.que);
+        index_set.double_set(grid_number);
 
         start_temp = temps[phase_index];
         end_temp = temps[phase_index + 1];
         time_threshold = times[phase_index];
         time_keeper = TimeKeeper(time_threshold);
+        time_threshold_inv = 1 / (double)time_threshold;
       } else {
-        progress_ratio = (double)time_keeper.getTime() / (double)time_threshold;
-        temp = start_temp + (end_temp - start_temp) * progress_ratio;
+        progress_ratio = (double)time_keeper.getTime() * time_threshold_inv;
+        temp_inv =
+            1.0 / (start_temp + (end_temp - start_temp) * progress_ratio);
       }
     }
 
     int idx = randXor() % index_set.size();
-
     int y = index_set.que[idx] / grid_number;
     int x = index_set.que[idx] % grid_number;
 
-    int diff_perimeter = 0;
+    int diff_perimeter = calc_diff_perimeter(y, x) * grid_size;
 
-    // gridがON-OFF可能か。あとでもともとON-OFF可能なグリッドだけ持つよう変更するけど
-    auto f = [grid_on, &diff_perimeter](int y2, int x2) {
-      y2++, x2++;
-      // 周囲のonの数を数える
-      int cnt_on = grid_on[y2 - 1][x2] + grid_on[y2][x2 - 1] +
-                   grid_on[y2 + 1][x2] + grid_on[y2][x2 + 1];
-      if (grid_on[y2][x2]) {
-        if (cnt_on == 1) diff_perimeter = -2;
-        if (cnt_on == 3) diff_perimeter = +2;
-      } else {
-        if (cnt_on == 1) diff_perimeter = +2;
-        if (cnt_on == 3) diff_perimeter = -2;
-      }
-    };
-
-    f(y, x);
-
-    diff_perimeter *= grid_size;
     if (perimeter + diff_perimeter > 400000) continue;
+    accepted++;
 
-    int delta_score = 0;
-    if (grid_on[y + 1][x + 1]) {
-      delta_score = -grid_score[y][x];
-    } else {
-      delta_score = grid_score[y][x];
-    }
-
-    probability = exp((double)delta_score / temp);
+    int delta_score =
+        grid_on[y + 1][x + 1] ? -grid_score[y][x] : grid_score[y][x];
+    probability = exp((double)delta_score * temp_inv);
     if (probability >= rand01()) {
+      updated++;
       // 受理
       grid_on[y + 1][x + 1] = grid_on[y + 1][x + 1] ^ 1;
       score += delta_score;
       perimeter += diff_perimeter;
       // 更新
-
-      // 8近傍を更新
-      rep(i, 8) {
-        int y2 = y + dy[i], x2 = x + dx[i];
-        if (min(y2, x2) < 0 || max(y2, x2) >= grid_number) continue;
-        int idx_2 = y2 * grid_number + x2;
-        if (g(y2, x2)) {
-          if (!index_set.contains(idx_2)) index_set.add(idx_2);
-        } else {
-          if (index_set.contains(idx_2)) index_set.remove(idx_2);
-        }
-      }
+      update_index_set(y, x, index_set, grid_number);
     }
   }
-  debug(loop_count);
-  debug(score);
-  // debug(grid_on);
+  cerr << "loop_count: " << loop_count << endl;
+  cerr << "score: " << score << endl;
+  // cerr << score << endl;
 
   // 左手法で復元
-  output_hand_on_wall(grid_number, grid_on);
+  output_hand_on_wall(grid_number);
 }

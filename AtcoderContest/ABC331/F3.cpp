@@ -167,7 +167,7 @@ using namespace atcoder;
 
 // ローリングハッシュ、ロリハ、rolling hash
 const int p1 = 1000000021;
-const int p2 = 1000000021;
+const int p2 = 1000000033;
 struct mints {
   int d1, d2;
   mints(int val = 0) : d1(val), d2(val) {}
